@@ -37,7 +37,7 @@ let tileZ = config.minLevel; //瓦片级别,瓦片Z
 let p1 = TileLnglatTransformBaidu.lnglatToTile(config.x1, config.y1, tileZ); //左上角
 let p2 = TileLnglatTransformBaidu.lnglatToTile(config.x2, config.y2, tileZ); //右下角
 let tileX = p1.tileX; //瓦片X
-let tileY = p2.tileY - 1; //瓦片Y
+let tileY = p2.tileY-1; //瓦片Y
 let taskList = new Set(); //任务队列
 let taskCount = 0; //已添加任务数量
 
@@ -87,8 +87,7 @@ function download(tile) {
     let req = http
         .get(src, httpOpiton, (res) => {
             let buffer = null;
-            let contentLength = Number(res.headers['content-length']);
-            if (res.statusCode !== 200 || isNaN(contentLength)) {
+            if (res.statusCode !== 200) {
                 errorHandler();
                 return;
             }
@@ -101,7 +100,7 @@ function download(tile) {
             })
                 .on('end', () => {
                     if (!isError) {
-                        if (buffer && buffer.length === contentLength && res.complete) {
+                        if (buffer && res.complete) {
                             successCallback(tile, buffer);
                         } else {
                             errorHandler();
@@ -123,7 +122,7 @@ function download(tile) {
  * 下载成功回调
  */
 function successCallback(tile, buffer, bb) {
-    let dir = path.join(config.path, tile[2].toString(), tile[0].toString());
+    let dir = path.join(config.path, tile[2].toString(), tile[0].toString());// z/x/y.png
     let fileName = `${tile[1]}.${config.ext || 'png'}`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -226,8 +225,8 @@ function downloadTiles() {
  */
 function addTask() {
     tileY++;
-    if (tileY > p1.tileY) {
-        tileY = p2.tileY;
+    if (tileY > p2.tileY) {
+        tileY = p1.tileY;
         tileX++;
         if (tileX > p2.tileX) {
             tileZ++;
@@ -235,7 +234,7 @@ function addTask() {
                 p1 = TileLnglatTransformBaidu.lnglatToTile(config.x1, config.y1, tileZ);
                 p2 = TileLnglatTransformBaidu.lnglatToTile(config.x2, config.y2, tileZ);
 
-                tileY = p2.tileY;
+                tileY = p1.tileY;
                 tileX = p1.tileX;
             }
         }
